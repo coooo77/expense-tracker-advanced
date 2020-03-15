@@ -1,0 +1,109 @@
+{
+  "records": [
+    {
+      "name": "沙發椅",
+      "category": "home",
+      "amount": 10000,
+      "merchant": "IKEA",
+      "date": "2020-02-01"
+    },
+    {
+      "name": "機車檢修",
+      "category": "transport",
+      "amount": 1000,
+      "merchant": "八萬一機車行",
+      "date": "2020-02-20"
+    },
+    {
+      "name": "惡靈古堡3重製板",
+      "category": "entertain",
+      "amount": 1800,
+      "merchant": "Steam",
+      "date": "2020-02-11"
+    },
+    {
+      "name": "蟹堡王美味蟹堡",
+      "category": "food",
+      "amount": 300,
+      "merchant": "蟹堡王",
+      "date": "2020-02-10"
+    },
+    {
+      "name": "牙科檢查",
+      "category": "other",
+      "amount": 200,
+      "merchant": "愛心牙科",
+      "date": "2020-02-10"
+    },
+    {
+      "name": "掃地機器人",
+      "category": "home",
+      "amount": 9090,
+      "merchant": "Sunrise",
+      "date": "2019-03-13"
+    },
+    {
+      "name": "悠遊卡儲值",
+      "category": "transport",
+      "amount": 1000,
+      "merchant": "7-11",
+      "date": "2019-04-13"
+    },
+    {
+      "name": "太空戰士7重製板",
+      "category": "entertain",
+      "amount": 2000,
+      "merchant": "Steam",
+      "date": "2019-05-13"
+    },
+    {
+      "name": "晚餐聚會",
+      "category": "food",
+      "amount": 360,
+      "merchant": "西堤",
+      "date": "2019-06-13"
+    },
+    {
+      "name": "孝親費",
+      "category": "other",
+      "amount": 20000,
+      "merchant": "父母",
+      "date": "2019-07-13"
+    },
+    {
+      "name": "大門維修",
+      "category": "home",
+      "merchant": "先拆坐墊維修行",
+      "amount": 5000,
+      "date": "2020-02-02"
+    },
+    {
+      "name": "機車更換機油",
+      "category": "transport",
+      "merchant": "八萬一機車行",
+      "amount": 300,
+      "date": "2020-02-22"
+    },
+    {
+      "name": "日月潭旅遊",
+      "category": "entertain",
+      "merchant": "起風旅遊團",
+      "amount": 4000,
+      "date": "2020-02-17"
+    },
+    {
+      "name": "早餐",
+      "category": "food",
+      "merchant": "芝麻城早餐店",
+      "amount": 300,
+      "date": "2020-02-10"
+    },
+    {
+      "name": "贊助donate",
+      "category": "other",
+      "merchant": "TWITCH",
+      "amount": 200,
+      "date": "2020-02-10"
+    }
+  ]
+}
