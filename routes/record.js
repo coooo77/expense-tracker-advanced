@@ -6,6 +6,7 @@ const Record = db.Record
 const { Op } = require("sequelize")
 // const Record = require('../models/record')
 const moneyCalculation = require('../moneyCalculation')
+const transformDate = require('../transformDate')
 const { authenticated } = require('../config/auth')
 const moment = require('moment')
 
@@ -98,7 +99,8 @@ router.get('/', authenticated, (req, res) => {
     })
     .then((records) => {
       const totalAmount = moneyCalculation(records)
-      return res.render('index', { records, totalAmount, dateFrom, dateTo, category, nextOrderForDate, nextOrderForAmount, home, transport, entertain, food, other })
+      const newRecords = transformDate(records)
+      return res.render('index', { records: newRecords, totalAmount, dateFrom, dateTo, category, nextOrderForDate, nextOrderForAmount, home, transport, entertain, food, other })
     })
     .catch((error) => { return res.status(422).json(error) })
 })
@@ -114,7 +116,6 @@ router.post('/', authenticated, (req, res) => {
   const select = { [data.category]: true }
   const check = Object.values(data).filter(value => value === "").length
   data.UserId = req.user.id
-  console.log('data', data)
   if (check) {
     const errors = [{ message: '資料不齊全' }]
     res.render('new', { data, errors, select })
@@ -125,7 +126,6 @@ router.post('/', authenticated, (req, res) => {
     data.food = false
     data.other = false
     data[req.body.category] = true
-    console.log('data', data)
     Record.create(data)
       .then((record) => { return res.redirect('/') })
       .catch((error) => { return res.status(422).json(error) })
