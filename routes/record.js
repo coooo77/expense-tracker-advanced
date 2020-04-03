@@ -7,6 +7,7 @@ const { Op } = require("sequelize")
 // const Record = require('../models/record')
 const moneyCalculation = require('../moneyCalculation')
 const { authenticated } = require('../config/auth')
+const moment = require('moment')
 
 // 得到所有records或篩選出特定種類records
 // 設計按鈕按照時間或金錢大小排列，同一個按鈕點兩次會有升降冪功能
@@ -112,121 +113,95 @@ router.post('/', authenticated, (req, res) => {
   const data = req.body
   const select = { [data.category]: true }
   const check = Object.values(data).filter(value => value === "").length
-  data.userId = req.user.id
+  data.UserId = req.user.id
+  console.log('data', data)
   if (check) {
     const errors = [{ message: '資料不齊全' }]
     res.render('new', { data, errors, select })
   } else {
-    const record = new Record(data)
-    record[req.body.category] = true
-    record.save(err => {
-      if (err) return console.log(err)
-      return res.redirect('/')
-    })
+    data.home = false
+    data.transport = false
+    data.entertain = false
+    data.food = false
+    data.other = false
+    data[req.body.category] = true
+    console.log('data', data)
+    Record.create(data)
+      .then((record) => { return res.redirect('/') })
+      .catch((error) => { return res.status(422).json(error) })
   }
 })
 
 // 編輯records頁面
 router.get('/:id/edit', authenticated, (req, res) => {
-  Record.findOne({
-    id: req.params.id,
-    userId: req.user.id,
-  })
-    .lean()
-    .exec((err, record) => {
-      if (err) return console.error(err)
-      return res.render('edit', record)
+  User.findByPk(req.user.id)
+    .then((user) => {
+      if (!user) throw new Error("user not found")
+      return Record.findOne({
+        where: {
+          Id: req.params.id,
+          UserId: req.user.id,
+        }
+      })
+    })
+    .then((record) => {
+      // input(type為date)的value一定要弄成XXXX-XX-XX的格式，如果弄成XXXX-X-X便不會顯示
+      const newRecord = record.get()
+      // newRecord.date = new Date(newRecord.date)
+      // const year = newRecord.date.getFullYear()
+      // const month = (newRecord.date.getMonth() + 1) < 10 ? '0' + (newRecord.date.getMonth() + 1) : (newRecord.date.getMonth() + 1)
+      // const date = (newRecord.date.getDate()) < 10 ? '0' + (newRecord.date.getDate()) : (newRecord.date.getDate())
+      // const newDate = `${year}-${month}-${date}`
+
+      // 用套件monent轉換日期，可以省下上面那串打法
+      const newDate = moment(newRecord.date).format('YYYY-MM-DD')
+      return res.render('edit', { record: record.get(), newDate })
     })
 })
 
-// 如果return res.render('edit', record)中的record沒有用{}，則可以用this作指派
-// 如果硬要寫{}，下面寫法要用.lean()處理，不然得到的不是純物件，會有警告
-// 什麼時候才要用.lean().exec? 看教材好像只有從資料庫讀取資料時才會用到
-// router.get('/:id/edit', authenticated, (req, res) => {
-//   Record.findOne({
-//     id: req.params.id,
-//     userId: req.user.id,
-//   }, (err, record) => {
-//     console.log('record', record)
-//     console.log('record.id', record.id)
-//     if (err) return console.error(err)
-//     return res.render('edit', { record })
-//   })
-// }) 
-
 // 編輯records
-// 編輯的data check要怎麼寫比較好?一個欄位故意不填寫就會產生BUG，可是用兩種{{}}感覺很微妙，是否有更優雅的方法?
-// 看tim同學的作法，用input用required就好，不過可以故意修改頁面繞過這個問題的樣子?
-// 當編輯records的時候，用.lean().exec()處理的資料會沒辦法用.save .....?!
-// TypeError: record.save is not a function
-// 以下為會產生錯誤的寫法
-// router.put('/:id/edit', authenticated, (req, res) => {
-//   Record.findOne({
-//     id: req.params.id,
-//     userId: req.user.id,
-//   })
-//     .lean()
-//     .exec((err, record) => {
-//       const data = req.body
-//       data.id = record.id
-//       const select = { [data.category]: true }
-//       const check = Object.values(data).filter(value => value === "").length
-//       if (check) {
-//         const errors = [{ message: '資料不齊全' }]
-//         console.log('data', data)
-//         res.render('edit', { data, errors, select })
-//       } else {
-//         if (err) return console.error(err)
-//         record[record.category] = false
-//         record[req.body.category] = true
-//         Object.assign(record, req.body)
-//         record.save(err => {
-//           if (err) return console.error(err)
-//           return res.redirect('/')
-//         })
-//       }
-//     })
-// })
-
 router.put('/:id/edit', authenticated, (req, res) => {
-  Record.findOne({
-    id: req.params.id,
-    userId: req.user.id,
-  }, (err, record) => {
-    const data = req.body
-    data.id = record.id
-    const select = { [data.category]: true }
-    const check = Object.values(data).filter(value => value === "").length
-    if (check) {
-      const errors = [{ message: '資料不齊全' }]
-      console.log('data', data)
-      res.render('edit', { data, errors, select })
-    } else {
-      if (err) return console.error(err)
-      record[record.category] = false
-      record[req.body.category] = true
-      Object.assign(record, req.body)
-      record.save(err => {
-        if (err) return console.error(err)
-        return res.redirect('/')
+  req.body.id = req.params.id
+  const data = req.body
+  const select = { [data.category]: true }
+  const check = Object.values(data).filter(value => value === "").length
+  if (check) {
+    const errors = [{ message: '資料不齊全' }]
+    res.render('edit', { data, errors, select })
+  } else {
+    Record.findOne({
+      where: {
+        Id: req.params.id,
+        UserId: req.user.id,
+      }
+    })
+      .then((record) => {
+        record[record.category] = false
+        record[req.body.category] = true
+        Object.assign(record, req.body)
+
+        return record.save()
       })
-    }
-  })
+      .then((record) => { return res.redirect('/') })
+      .catch((error) => { return res.status(422).json(error) })
+  }
 })
 
 // 刪除records
 router.delete('/:id/delete', authenticated, (req, res) => {
-  Record.findOne({
-    id: req.params.id,
-    userId: req.user.id,
-  }, (err, record) => {
-    console.log('record', record)
-    if (err) return console.error(err)
-    record.remove(err => {
-      if (err) return console.error(err)
-      return res.redirect('/')
+  User.findByPk(req.user.id)
+    .then((user) => {
+      if (!user) throw new Error("user not found")
+
+      return Record.destroy({
+        where: {
+          UserId: req.user.id,
+          Id: req.params.id
+        }
+      })
     })
-  })
+    .then((todo) => { return res.redirect('/') })
+    .catch((error) => { return res.status(422).json(error) })
 })
 
 module.exports = router

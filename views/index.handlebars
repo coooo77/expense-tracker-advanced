@@ -43,19 +43,19 @@
 
           <div class="buttons">
 
+            <div class="form-group row d-flex justify-content-end mb-2">
+              <div class="col-12">
+                <button type="submit" class="btn btn-info btn-block">搜尋帳本紀錄</button>
+              </div>
+            </div>
+
             <a href="/records?field=date{{#if dateFrom}}&dateFrom={{dateFrom}}{{/if}}{{#if dateTo}}&dateTo={{dateTo}}{{/if}}{{#if category}}&category={{category}}{{/if}}{{#if nextOrderForDate}}&order={{nextOrderForDate}}{{/if}}"
               class="w-100 h-75 btn btn-primary btn-block mr-1">時間排序</a>
 
             <a href="/records?field=amount{{#if dateFrom}}&dateFrom={{dateFrom}}{{/if}}{{#if dateTo}}&dateTo={{dateTo}}{{/if}}{{#if category}}&category={{category}}{{/if}}{{#if nextOrderForAmount}}&order={{nextOrderForAmount}}{{/if}}"
               class="w-100 btn btn-primary btn-block mb-2">金額排序</a>
 
-            <div class="form-group row d-flex justify-content-end mb-2">
-              <div class="col-12">
-                <button type="submit" class="btn btn-primary btn-block">搜尋帳本紀錄</button>
-              </div>
-            </div>
-
-            <a href="/records/new" class="btn btn-primary mb-2 btn-block ">新增支出</a>
+            <a href="/records/new" class="btn btn-info mb-2 btn-block ">新增支出</a>
 
           </div>
 
@@ -89,13 +89,13 @@
                 </h4>
               </div>
               <div class="col-auto d-flex align-items-center">
-                <a href="/records/{{{this._id}}}/edit" class="btn btn-success mr-1">修改</a>
-                <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#Modal{{{this._id}}}">
+                <a href="/records/{{{this.id}}}/edit" class="btn btn-success mr-1">修改</a>
+                <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#Modal{{{this.id}}}">
                   刪除
                 </button>
 
-                <div class="modal fade" id="Modal{{{this._id}}}" tabindex="-1" role="dialog"
-                  aria-labelledby="ModalLabel" aria-hidden="true">
+                <div class="modal fade" id="Modal{{{this.id}}}" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+                  aria-hidden="true">
                   <div class="modal-dialog" role="document">
                     <div class="modal-content">
                       <div class="modal-header">
@@ -111,7 +111,7 @@
                       </div>
                       <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-dismiss="modal">放棄</button>
-                        <form method="POST" action="/records/{{{this._id}}}/delete?_method=DELETE"
+                        <form method="POST" action="/records/{{{this.id}}}/delete?_method=DELETE"
                           style="display: inline;">
                           <button class="btn btn-danger p-1 btn-lg" type="submit">刪除</button>
                         </form>
