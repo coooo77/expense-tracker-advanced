@@ -1,51 +1,65 @@
 <div class="container my-5 bg-light">
   <div class="row d-flex justify-content-center">
-    <div class="col-12 col-md-10 border bg-info rounded-lg">
+    <div class="col-12 col-md-10 border bg-info rounded-lg py-3">
 
-      <div class="function bg-warning d-flex align-items-center rounded-lg mt-2 p-2">
-        <div class="dropdown d-flex align-items-center rounded-lg w-25 mr-1">
-          <button class="w-100 btn btn-secondary btn-block dropdown-toggle" type="button" id="dropdownMenuButton"
-            data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-            類別
-          </button>
-          <div class="w-100 dropdown-menu" aria-labelledby="dropdownMenuButton">
-            <a class="dropdown-item text-center" href="/records?type=home{{#if month}}&month={{month}}{{/if}}">家居物業</a>
-            <a class="dropdown-item text-center"
-              href="/records?type=transport{{#if month}}&month={{month}}{{/if}}">交通出行</a>
-            <a class="dropdown-item text-center"
-              href="/records?type=entertain{{#if month}}&month={{month}}{{/if}}">休閒娛樂</a>
-            <a class="dropdown-item text-center" href="/records?type=food{{#if month}}&month={{month}}{{/if}}">餐飲食品</a>
-            <a class="dropdown-item text-center" href="/records?type=other{{#if month}}&month={{month}}{{/if}}">其他</a>
-            <a class="dropdown-item text-center" href="/records{{#if month}}?month={{month}}{{/if}}">所有項目</a>
+      <div class="function bg-warning rounded-lg my-2 p-2">
+
+        <form action="/records" method="GET">
+
+          <div class="searchDate">
+
+            <div class="form-group row">
+              <label for="dateFrom" class="col-sm-2 col-form-label col-form-label-lg">From：</label>
+              <div class="col-sm-10">
+                <input type="date" class="form-control form-control-lg" id="dateFrom" name="dateFrom"
+                  {{#if dateFrom}}value="{{dateFrom}}" {{/if}}>
+              </div>
+            </div>
+
+            <div class="form-group row">
+              <label for="dateTo" class="col-sm-2 col-form-label col-form-label-lg">To：</label>
+              <div class="col-sm-10">
+                <input type="date" class="form-control form-control-lg" id="dateTo" name="dateTo"
+                  {{#if dateTo}}value="{{dateTo}}" {{/if}}>
+              </div>
+            </div>
+
+            <div class="form-group row">
+              <label for="category" class="col-sm-2 col-form-label col-form-label-lg">類別*：</label>
+              <div class="col-sm-10">
+                <select class="custom-select" style="height:50px;font-size:20px" id="category" name="category" required>
+                  {{!-- <option selected>選擇類別</option> --}}
+                  <option value="all">所有紀錄</option>
+                  <option value="home" {{#if home}}selected{{/if}}>家居物業</option>
+                  <option value="transport" {{#if transport}}selected{{/if}}>交通出行</option>
+                  <option value="entertain" {{#if entertain}}selected{{/if}}>休閒娛樂</option>
+                  <option value="food" {{#if food}}selected{{/if}}>餐飲食品</option>
+                  <option value="other" {{#if other}}selected{{/if}}>其他</option>
+                </select>
+              </div>
+            </div>
+
           </div>
-        </div>
 
-        <div class="dropdown d-flex align-items-center rounded-lg w-25 mr-1">
-          <button class="w-100 btn btn-secondary btn-block dropdown-toggle" type="button" id="dropdownMenuButton"
-            data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-            月份
-          </button>
-          <div class="w-100 dropdown-menu" aria-labelledby="dropdownMenuButton">
-            <a class="dropdown-item text-center" href="/records?month=-01-{{#if type}}&type={{type}}{{/if}}">1月</a>
-            <a class="dropdown-item text-center" href="/records?month=-02-{{#if type}}&type={{type}}{{/if}}">2月</a>
-            <a class="dropdown-item text-center" href="/records?month=-03-{{#if type}}&type={{type}}{{/if}}">3月</a>
-            <a class="dropdown-item text-center" href="/records?month=-04-{{#if type}}&type={{type}}{{/if}}">4月</a>
-            <a class="dropdown-item text-center" href="/records?month=-05-{{#if type}}&type={{type}}{{/if}}">5月</a>
-            <a class="dropdown-item text-center" href="/records?month=-06-{{#if type}}&type={{type}}{{/if}}">6月</a>
-            <a class="dropdown-item text-center" href="/records?month=-07-{{#if type}}&type={{type}}{{/if}}">7月</a>
-            <a class="dropdown-item text-center" href="/records?month=-08-{{#if type}}&type={{type}}{{/if}}">8月</a>
-            <a class="dropdown-item text-center" href="/records?month=-09-{{#if type}}&type={{type}}{{/if}}">9月</a>
-            <a class="dropdown-item text-center" href="/records?month=-10-{{#if type}}&type={{type}}{{/if}}">10月</a>
-            <a class="dropdown-item text-center" href="/records?month=-11-{{#if type}}&type={{type}}{{/if}}">11月</a>
-            <a class="dropdown-item text-center" href="/records?month=-12-{{#if type}}&type={{type}}{{/if}}">12月</a>
-            <a class="dropdown-item text-center" href="/records{{#if type}}?type={{type}}{{/if}}">所有項目</a>
+          <div class="buttons">
+
+            <a href="/records?field=date{{#if dateFrom}}&dateFrom={{dateFrom}}{{/if}}{{#if dateTo}}&dateTo={{dateTo}}{{/if}}{{#if category}}&category={{category}}{{/if}}{{#if nextOrderForDate}}&order={{nextOrderForDate}}{{/if}}"
+              class="w-100 h-75 btn btn-primary btn-block mr-1">時間排序</a>
+
+            <a href="/records?field=amount{{#if dateFrom}}&dateFrom={{dateFrom}}{{/if}}{{#if dateTo}}&dateTo={{dateTo}}{{/if}}{{#if category}}&category={{category}}{{/if}}{{#if nextOrderForAmount}}&order={{nextOrderForAmount}}{{/if}}"
+              class="w-100 btn btn-primary btn-block mb-2">金額排序</a>
+
+            <div class="form-group row d-flex justify-content-end mb-2">
+              <div class="col-12">
+                <button type="submit" class="btn btn-primary btn-block">搜尋帳本紀錄</button>
+              </div>
+            </div>
+
+            <a href="/records/new" class="btn btn-primary mb-2 btn-block ">新增支出</a>
+
           </div>
-        </div>
 
-        <a href="/records?field=date{{#if nextOrderForDate}}&order={{nextOrderForDate}}{{/if}}{{#if type}}&type={{type}}{{/if}}{{#if month}}&month={{month}}{{/if}}"
-          class="w-25 h-75 btn btn-primary btn-block mr-1">時間排序</a>
-        <a href="/records?field=amount{{#if nextOrderForAmount}}&order={{nextOrderForAmount}}{{/if}}{{#if type}}&type={{type}}{{/if}}{{#if month}}&month={{month}}{{/if}}"
-          class="w-25 btn btn-primary btn-block mb-2">金額排序</a>
+        </form>
 
       </div>
 
@@ -111,8 +125,6 @@
           </li>
         {{/each}}
       </ul>
-
-      <a href="/records/new" class="btn btn-primary my-3">新增支出</a>
 
     </div>
   </div>

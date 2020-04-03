@@ -1,24 +1,39 @@
 const express = require('express')
 const router = express.Router()
-const Record = require('../models/record')
+const db = require('../models')
+const User = db.User
+const Record = db.Record
+const { Op } = require("sequelize")
+// const Record = require('../models/record')
 const moneyCalculation = require('../moneyCalculation')
 const { authenticated } = require('../config/auth')
-
-function test(date) {
-  const month = date.split('-')
-  return month[2]
-}
 
 // 得到所有records或篩選出特定種類records
 // 設計按鈕按照時間或金錢大小排列，同一個按鈕點兩次會有升降冪功能
 // 邏輯：有正面，就弄反面的連結
-// 日期格式是 xxxx-xx-xx 例如 2018-03-01，如果要搜尋3月，即搜尋-03-，也就日期字串包含-xx-的資料
 router.get('/', authenticated, (req, res) => {
-  const type = req.query.type || null
+  const category = req.query.category || ''
+  let home
+  let transport
+  let entertain
+  let food
+  let other
+  if (category === 'home') {
+    home = true
+  } else if (category === 'transport') {
+    transport = true
+  } else if (category === 'entertain') {
+    entertain = true
+  } else if (category === 'food') {
+    food = true
+  } else if (category === 'other') {
+    other = true
+  }
+
   const field = req.query.field || "date"
   const order = req.query.order || "asc"
-  const month = req.query.month || ''
 
+  // 設定對應的順序
   let nextOrderForDate = "desc"
   if (field === "date" && order === "desc") {
     nextOrderForDate = "asc"
@@ -29,18 +44,62 @@ router.get('/', authenticated, (req, res) => {
     nextOrderForAmount = "desc"
   }
 
-  Record.find({
-    userId: req.user._id,
-    [type]: type ? true : null,
-    date: { $regex: month }
-  })
-    .sort({ [field]: order })
-    .lean()
-    .exec((err, records) => {
-      const totalAmount = moneyCalculation(records)
-      if (err) return console.error(err)
-      return res.render('index', { records, totalAmount, type, nextOrderForDate, nextOrderForAmount, month })
+  // 依照需求建立物件queryWhere給Record.findAll使用  
+
+  // 建立queryWhere裡面的使用者名稱
+  const queryUserId = { UserId: req.user.id }
+
+  // 建立queryWhere裡面的搜尋資料類型
+  let queryType
+  if (req.query.category !== undefined) {
+    if (req.query.category !== 'all') {
+      queryType = { category: `${req.query.category}` }
+    }
+  } else {
+    queryType = {}
+  }
+
+  // 建立queryWhere裡面的搜尋時間
+  let dateFrom = req.query.dateFrom || ''
+  let dateTo = req.query.dateTo || ''
+  let queryMonth = {
+    date: {
+      [Op.lt]: dateTo ? new Date(`${dateTo}`) : new Date('9999-12-30'),
+      [Op.gt]: dateFrom ? new Date(`${dateFrom}`) : new Date('0000-01-01')
+    }
+  }
+
+  // 組成物件queryWhere
+  const queryWhere = Object.assign(queryUserId, queryType, queryMonth)
+
+  // 處理給Record.findAll的物件
+  // 沒有req.query，那就是剛登入的狀態，不需要向資料庫尋求排列order
+  let queryObject
+  if (!Object.values(req.query).length) {
+    queryObject = {
+      raw: true,
+      nest: true,
+      where: queryWhere
+    }
+  } else {
+    queryObject = {
+      order: [[`${field}`, `${order}`]],
+      raw: true,
+      nest: true,
+      where: queryWhere
+    }
+  }
+
+  User.findByPk(req.user.id)
+    .then((user) => {
+      if (!user) throw new Error("user not found")
+      return Record.findAll(queryObject)
     })
+    .then((records) => {
+      const totalAmount = moneyCalculation(records)
+      return res.render('index', { records, totalAmount, dateFrom, dateTo, category, nextOrderForDate, nextOrderForAmount, home, transport, entertain, food, other })
+    })
+    .catch((error) => { return res.status(422).json(error) })
 })
 
 // 新增records頁面
@@ -53,7 +112,7 @@ router.post('/', authenticated, (req, res) => {
   const data = req.body
   const select = { [data.category]: true }
   const check = Object.values(data).filter(value => value === "").length
-  data.userId = req.user._id
+  data.userId = req.user.id
   if (check) {
     const errors = [{ message: '資料不齊全' }]
     res.render('new', { data, errors, select })
@@ -70,8 +129,8 @@ router.post('/', authenticated, (req, res) => {
 // 編輯records頁面
 router.get('/:id/edit', authenticated, (req, res) => {
   Record.findOne({
-    _id: req.params.id,
-    userId: req.user._id,
+    id: req.params.id,
+    userId: req.user.id,
   })
     .lean()
     .exec((err, record) => {
@@ -85,11 +144,11 @@ router.get('/:id/edit', authenticated, (req, res) => {
 // 什麼時候才要用.lean().exec? 看教材好像只有從資料庫讀取資料時才會用到
 // router.get('/:id/edit', authenticated, (req, res) => {
 //   Record.findOne({
-//     _id: req.params.id,
-//     userId: req.user._id,
+//     id: req.params.id,
+//     userId: req.user.id,
 //   }, (err, record) => {
 //     console.log('record', record)
-//     console.log('record._id', record._id)
+//     console.log('record.id', record.id)
 //     if (err) return console.error(err)
 //     return res.render('edit', { record })
 //   })
@@ -103,13 +162,13 @@ router.get('/:id/edit', authenticated, (req, res) => {
 // 以下為會產生錯誤的寫法
 // router.put('/:id/edit', authenticated, (req, res) => {
 //   Record.findOne({
-//     _id: req.params.id,
-//     userId: req.user._id,
+//     id: req.params.id,
+//     userId: req.user.id,
 //   })
 //     .lean()
 //     .exec((err, record) => {
 //       const data = req.body
-//       data._id = record._id
+//       data.id = record.id
 //       const select = { [data.category]: true }
 //       const check = Object.values(data).filter(value => value === "").length
 //       if (check) {
@@ -131,11 +190,11 @@ router.get('/:id/edit', authenticated, (req, res) => {
 
 router.put('/:id/edit', authenticated, (req, res) => {
   Record.findOne({
-    _id: req.params.id,
-    userId: req.user._id,
+    id: req.params.id,
+    userId: req.user.id,
   }, (err, record) => {
     const data = req.body
-    data._id = record._id
+    data.id = record.id
     const select = { [data.category]: true }
     const check = Object.values(data).filter(value => value === "").length
     if (check) {
@@ -158,8 +217,8 @@ router.put('/:id/edit', authenticated, (req, res) => {
 // 刪除records
 router.delete('/:id/delete', authenticated, (req, res) => {
   Record.findOne({
-    _id: req.params.id,
-    userId: req.user._id,
+    id: req.params.id,
+    userId: req.user.id,
   }, (err, record) => {
     console.log('record', record)
     if (err) return console.error(err)
